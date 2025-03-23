@@ -9,10 +9,8 @@ public class SayaTubeVideo
 
     public SayaTubeVideo(string title)
     {
-        if (string.IsNullOrEmpty(title) || title.Length > 100)
-        {
-            throw new ArgumentException("Judul video tidak valid");
-        }
+        Debug.Assert(!string.IsNullOrEmpty(title), "Judul video tidak boleh null atau kosong");
+        Debug.Assert(title.Length <= 100, "Judul video tidak boleh lebih dari 100 karakter");
         this.title = title;
         this.id = GenerateRandomId();
         this.playCount = 0;
@@ -26,9 +24,19 @@ public class SayaTubeVideo
 
     public void IncreasePlayCount(int count)
     {
-        Debug.Assert(count >= 0, "Jumlah penambahan play count tidak boleh negatif");
-        Debug.Assert(count <= 10000000, "Jumlah penambahan play count tidak boleh lebih dari 10.000.000");
-        this.playCount += count;
+        Debug.Assert(count <= 10000000, "Input penambahan play count tidak boleh lebih dari 10.000.000");
+
+        try
+        {
+            checked
+            {
+                this.playCount += count;
+            }
+        }
+        catch (OverflowException ex)
+        {
+            Console.WriteLine("Terjadi overflow pada penambahan play count: " + ex.Message);
+        }
     }
 
     public void PrintVideoDetails()
@@ -49,6 +57,12 @@ class Program
             SayaTubeVideo video = new SayaTubeVideo("Tutorial Design By Contract – MUHAMMAD FAIZ ADYA");
             video.IncreasePlayCount(1000);
             video.PrintVideoDetails();
+
+            for (int i = 0; i < 100; i++)
+            {
+                video.IncreasePlayCount(10000000); 
+            }
+        
         }
         catch (ArgumentException e)
         {
